@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" class="">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>煮有次序 - Culinary Life</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=Noto+Serif+TC:wght@400;700&family=Nunito:wght@400;600&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#f9f506", // Instructions specified primary color
+                        "brand-orange": "#F8C688", // Original brand orange from Screen 1
+                        "accent-green": "#728C44",
+                        "text-brown": "#5B4636",
+                        "background-light": "#FFFDF5",
+                        "background-dark": "#1F1D1B",
+                        "card-light": "#FFF8E7",
+                        "card-dark": "#2C2A26",
+                    },
+                    fontFamily: {
+                        display: ["Noto Serif TC", "serif"],
+                        sans: ["Nunito", "Noto Sans TC", "sans-serif"],
+                        serif: ["Noto Serif TC", "serif"],
+                    },
+                    borderRadius: {
+                        DEFAULT: "1rem",
+                        "circle": "50%",
+                        "full": "9999px", // Instructions specified rounded-full
+                    }
+                },
+            },
+        };
+    </script>
+    <style>
+        body {
+            font-family: 'Nunito', 'Noto Sans TC', sans-serif;
+            transition: background-color 0.3s ease;
+        }
+        .text-shadow {
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        .oval-mask {
+            border-radius: 40% 40% 45% 45% / 45% 45% 40% 40%;
+        }
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #FFFDF5;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #F8C688;
+            border-radius: 5px;
+        }
+        .dark ::-webkit-scrollbar-track {
+            background: #1F1D1B;
+        }
+        .dark ::-webkit-scrollbar-thumb {
+            background: #D9A066;
+        }
+        /* Custom dot patterns */
+        .bg-dot-pattern {
+            background-image: radial-gradient(#D9CBB3 1.5px, transparent 1.5px);
+            background-size: 20px 20px;
+        }
+        .dark .bg-dot-pattern {
+            background-image: radial-gradient(#44403C 1.5px, transparent 1.5px);
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-text-brown dark:text-gray-200">
+    <div id="root"></div>
+
+    <!-- Core Libraries -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/history@5/umd/history.development.js"></script>
+    <script src="https://unpkg.com/react-router@6.3.0/umd/react-router.development.js"></script>
+    <script src="https://unpkg.com/react-router-dom@6.3.0/umd/react-router-dom.development.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+        const { createRoot } = ReactDOM;
+        const { MemoryRouter, Routes, Route, Link, useNavigate } = ReactRouterDOM;
+
+        // --- Shared Components ---
+
+        const DarkModeToggle = () => {
+            const toggle = () => document.documentElement.classList.toggle('dark');
+            return (
+                <button 
+                    onClick={toggle}
+                    className="p-2 rounded-full bg-white/20 hover:bg-white/30 text-white dark:text-primary transition-all flex items-center justify-center"
+                    aria-label="Toggle Dark Mode"
+                >
+                    <span className="material-icons text-xl dark:hidden">dark_mode</span>
+                    <span className="material-icons text-xl hidden dark:block">light_mode</span>
+                </button>
+            );
+        };
+
+        const Footer = () => (
+            <footer class="bg-brand-orange dark:bg-stone-800 py-16 text-center shadow-inner relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-4 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+                <div class="max-w-4xl mx-auto px-4 relative z-10">
+                    <div class="flex justify-center space-x-6 md:space-x-10 mb-10">
+                        <a class="w-14 h-14 bg-[#FF0000] rounded-full flex items-center justify-center text-white text-2xl shadow-lg hover:scale-110 transition-transform" href="#"><i class="fab fa-youtube"></i></a>
+                        <a class="w-14 h-14 bg-[#1877F2] rounded-full flex items-center justify-center text-white text-2xl shadow-lg hover:scale-110 transition-transform" href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a class="w-14 h-14 bg-gradient-to-tr from-[#f09433] via-[#dc2743] to-[#bc1888] rounded-full flex items-center justify-center text-white text-2xl shadow-lg hover:scale-110 transition-transform" href="#"><i class="fab fa-instagram"></i></a>
+                        <a class="w-14 h-14 bg-[#06C755] rounded-full flex items-center justify-center text-white text-3xl shadow-lg hover:scale-110 transition-transform" href="#"><i class="fab fa-line"></i></a>
+                    </div>
+                    <h3 class="text-xl md:text-2xl font-bold text-text-brown dark:text-primary mb-4">聯絡我們</h3>
+                    <p class="text-sm md:text-base text-text-brown/80 dark:text-gray-300 font-medium tracking-wider">
+                        “HELPING YOU STAY FOCUSED AND LEADING AHEAD.”
+                    </p>
+                    <div class="mt-8 pt-6 border-t border-text-brown/10 dark:border-white/10 w-1/2 mx-auto text-xs opacity-60">
+                        © 2023 Cooking Life. All rights reserved.
+                    </div>
+                </div>
+            </footer>
+        );
+
+        const Navbar = () => {
+            const navigate = useNavigate();
+            return (
+                <nav class="sticky top-0 z-50 bg-brand-orange dark:bg-stone-900 shadow-md transition-colors">
+                    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div class="flex justify-between items-center h-20">
+                            <Link to="/" class="flex-shrink-0 flex items-center group">
+                                <div class="w-12 h-12 relative flex items-center justify-center bg-white rounded-full overflow-hidden border-2 border-accent-green mr-3 transition-transform group-hover:scale-110">
+                                    <span class="text-accent-green font-bold text-xl">FC</span>
+                                </div>
+                                <span class="font-bold text-2xl text-white dark:text-primary hidden sm:block">Cooking Life</span>
+                            </Link>
+                            <div class="hidden md:flex space-x-8 items-center">
+                                <Link class="text-white dark:text-gray-300 hover:text-primary dark:hover:text-primary px-3 py-2 font-medium text-lg transition" to="/">關於我們</Link>
+                                <Link class="text-white dark:text-gray-300 hover:text-primary dark:hover:text-primary px-3 py-2 font-medium text-lg transition" to="/">最新消息</Link>
+                                <Link class="text-white dark:text-gray-300 hover:text-primary dark:hover:text-primary px-3 py-2 font-medium text-lg transition" to="/">食譜分享</Link>
+                                <Link class="text-white dark:text-gray-300 hover:text-primary dark:hover:text-primary px-3 py-2 font-medium text-lg transition" to="/">冷凍宅配</Link>
+                                <DarkModeToggle />
+                            </div>
+                            <div class="md:hidden flex items-center space-x-2">
+                                <DarkModeToggle />
+                                <Link to="/menu" class="text-white dark:text-primary hover:text-white focus:outline-none" type="button">
+                                    <span class="material-icons text-4xl">menu</span>
+                                </Link>
+                            </div>
+                        </div>
+                    </div>
+                </nav>
+            );
+        };
+
+        // --- Screen Components ---
+
+        const HomePage = () => {
+            const navigate = useNavigate();
+            return (
+                <div className="flex flex-col min-h-screen">
+                    <Navbar />
+                    <header class="relative bg-background-light dark:bg-background-dark overflow-hidden">
+                        <div class="absolute inset-0 bg-dot-pattern opacity-30"></div>
+                        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20 flex flex-col items-center text-center">
+                            <div class="relative w-full max-w-3xl mb-8">
+                                <div class="aspect-[16/9] md:aspect-[21/9] rounded-[3rem] overflow-hidden shadow-xl relative bg-gradient-to-br from-green-100 to-yellow-100 dark:from-green-900 dark:to-yellow-900">
+                                    <img alt="Fresh vegetables" class="w-full h-full object-cover opacity-80 dark:opacity-60" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDIuAgfvtlUvIA2L52rYgmaZWKePiWfRtVpC-Xp661dMV21jYy451JxvMvpafQhFjM83-9VdG-dr6zJCfIrJ7YFZhdv5ZFlPYG24Rsul7YdDLkplWuR4sWGSFxD8K_qSq3GwxgB4TAYzfth-t-cTIOWvPB5CcWJHxhIZXtBoIz7i_8-QyO7vJ0RjpYPDrmG_PCRdkLNipnTxbytlpfRII1SuSG3RTYOP_YLHXnG4ZSD6oG-HtLj7xiB15NRkrUIbTp5tuO9XzCziuw"/>
+                                    <div class="absolute inset-0 flex items-center justify-center">
+                                        <div class="w-40 h-40 md:w-56 md:h-56 bg-brand-orange/90 dark:bg-stone-800/90 rounded-full flex items-center justify-center shadow-lg border-4 border-white/30 backdrop-blur-sm">
+                                            <div class="text-center">
+                                                <span class="material-icons text-5xl md:text-7xl text-text-brown dark:text-primary mb-1">restaurant_menu</span>
+                                                <h2 class="text-xl md:text-3xl font-bold text-text-brown dark:text-primary leading-tight">煮有<br/>序</h2>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <h1 class="text-4xl md:text-6xl font-display font-bold text-text-brown dark:text-primary mb-4 tracking-wide">食譜分享</h1>
+                            <p class="text-2xl md:text-4xl font-medium text-text-brown dark:text-gray-300 mb-4">用心做好每道料理</p>
+                            <p class="text-lg text-gray-500 dark:text-gray-400">天然食材簡單煮有序</p>
+                        </div>
+                    </header>
+                    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full space-y-24 relative z-10">
+                        <section class="w-full max-w-4xl mx-auto">
+                            <div onClick={() => navigate('/recipe')} class="relative rounded-[3rem] overflow-hidden shadow-2xl group cursor-pointer aspect-video bg-gray-200 dark:bg-gray-800">
+                                <img alt="Cooking cookie dough" class="w-full h-full object-cover transition transform duration-700 group-hover:scale-105 opacity-90" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDJjIgfUbUB04U-YLmpf47i6ZJvGE134zYktCAX_ec7F_gHYwwCUJpLz9zAZzXXj_LkMDoqSVLKa4TnEizkPeryFhFITPQ_ZKg_1QfrW9qRGtczPcvBLsIut8f_S12-16UPlHQyw3FuJWfFh81A1bVJ9zdk8GF4zNfoNwc_VWKcsOp3f-qzzZxnB8Fil8IW4NTMmR72pWzeGZ_LPPc_bPRbjs5O84C9JsVIJCOgVM0fKOuDC1t6gRykeRq_8S_G9ei4Yr6NS_lESxU"/>
+                                <div class="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition flex items-center justify-center">
+                                    <div class="w-20 h-20 bg-red-600 rounded-3xl flex items-center justify-center shadow-lg transform transition group-hover:scale-110">
+                                        <span class="material-icons text-white text-5xl ml-1">play_arrow</span>
+                                    </div>
+                                </div>
+                                <div class="absolute top-6 left-6 w-14 h-14 bg-primary rounded-full flex items-center justify-center shadow-md">
+                                    <span class="material-icons text-text-brown text-2xl">restaurant</span>
+                                </div>
+                            </div>
+                        </section>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-16 md:gap-y-24 items-start">
+                            {[
+                                { title: "家庭日日煮", icon: "soup_kitchen", img: "https://lh3.googleusercontent.com/aida-public/AB6AXuDw5WYoHXPc3v4bB6lk_rWwdUo3HsLxN7QEAz8uRVExBTZOlw7v8yhFK0NSrSvz1kiylmNAXUMdRDezwdRoHq8VCDJH71WcIsMlKFR26d7ZFtqwuDi1HE1K3ZUt1bU72GwD6M3WnVbhIMScQw46Oxa1xKvNbZRiJU20Zkv1zMDHs7KeO11cpgv4GeDW5EW2fkscuxpr96EJHBnNEsD2ToyOerwsWCbffPRYaDbtADH818zJG0MJ017dYrGCeYFZLY995ZC0bm-QSb0", rotate: "rotate-3" },
+                                { title: "偶爾煮大餐", icon: "restaurant", img: "https://lh3.googleusercontent.com/aida-public/AB6AXuDpILDLlPTCE8aLkrzSV9GxQum3JveM0RQEuCNERiaXpJ9vYmlF0fKOHtm05xSB_5eNkjJ1NOi3Z2F-XwAIIYkUXnN_Q0zMUJFPpc4NA0ua1OBNFCaveAPGZPC4OsfRRib5iR46350yvdnxIDuyGheV7r65eXA9yUGcUpHezH2UjHHbibkgS_f-mL39VdaqgZh1QQwmp86kUU2A6LYOP9kIVEALor1P_243U08-DtDvyG2ocB-T-yJchrikygbVNZz_qmvaDkckPR4", rotate: "-rotate-2", mt: true },
+                                { title: "慶祝一下", icon: "local_pizza", img: "https://lh3.googleusercontent.com/aida-public/AB6AXuAFP_eh85OVMVjJRg2HSwTm45qkiNk_9a-4kSk7Uz_Bbodp-ZM-yL9tANDyByvZJc3cEVmXWdxP8tqiDfYI_w2C7-T2dlktutXzcyYmgXdMm9jvq_Ljs1qs-xlCk8BrlQghpSN_D0qEJ9cuVuTY3vQijv3IpGtKt-2Lkrg-08_EvywV4Ro6pnV41qiQTu5LuVKd8cFe3RmYToUb_RB3_WtbpVEBZs3bumUUsb-V7v1L3HBeJt3ftGk7QdEA4PcpdaZqSIKrTbb84oc", rotate: "rotate-2" },
+                                { title: "冷凍宅配餐", icon: "ac_unit", img: "https://lh3.googleusercontent.com/aida-public/AB6AXuCMxUKODJwlbC_LDQddrMaEtOBdEE2WmyIX3qRvg7gt8f6WcfEhFDpOcc43YHj9_sAtU3fyM0_VhATKbYIpzI6KGsBJV9bTzBvWDtse79ckKnwPJZCdlzsNwyivooKuqnl9sBAfG9HLUKkfpm9zaDG_IMXePF5KVE4GwOLd2iATMgcfS2VMYaa3uWLsB8ickkoTkdex733WgrMlBWKXbfwDDDtNjEnVGuHpQqKDW6imjU1C5o65uRGnGOURLi00VfYq8QYStY5f9nM", rotate: "-rotate-3", mt: true }
+                            ].map((item, idx) => (
+                                <section key={idx} class={`flex flex-col items-center group ${item.mt ? 'md:mt-12' : ''} cursor-pointer`} onClick={() => navigate('/recipe')}>
+                                    <div class="flex items-center gap-3 mb-6">
+                                        <div class="w-6 h-6 rounded-full bg-primary/50"></div>
+                                        <h2 class="text-3xl font-bold text-text-brown dark:text-primary">{item.title}</h2>
+                                        <div class="w-6 h-6 rounded-full bg-primary/50"></div>
+                                    </div>
+                                    <div class="relative w-full max-w-md aspect-[4/3]">
+                                        <div class={`absolute inset-0 bg-primary/20 dark:bg-primary/10 rounded-[3rem] transform ${item.rotate} scale-105 transition group-hover:rotate-0`}></div>
+                                        <div class="relative w-full h-full rounded-[3rem] overflow-hidden border-4 border-card-light dark:border-card-dark shadow-xl bg-white dark:bg-gray-800">
+                                            <img alt={item.title} class="w-full h-full object-cover group-hover:scale-110 transition duration-700" src={item.img}/>
+                                            <div class="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-20 h-20 bg-card-light dark:bg-gray-700 rounded-full flex items-center justify-center shadow-lg border-2 border-primary z-10">
+                                                <span class="material-icons text-accent-green text-3xl">{item.icon}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </section>
+                            ))}
+                        </div>
+                    </main>
+                    <Footer />
+                </div>
+            );
+        };
+
+        const MenuPage = () => {
+            const navigate = useNavigate();
+            return (
+                <div class="bg-background-light dark:bg-background-dark min-h-screen flex flex-col font-sans">
+                    <header class="w-full bg-brand-orange/20 dark:bg-surface-dark/50 backdrop-blur-sm sticky top-0 z-50 border-b border-brand-orange/30">
+                        <div class="max-w-4xl mx-auto px-6 py-4 flex justify-between items-center">
+                            <div class="flex items-center gap-2">
+                                <div class="w-10 h-10 bg-gradient-to-br from-orange-400 to-green-500 rounded-full flex items-center justify-center text-white font-bold shadow-sm">
+                                    <span class="material-icons text-xl">restaurant_menu</span>
+                                </div>
+                                <span class="text-xl font-display font-bold text-text-brown dark:text-primary tracking-widest">煮有痕</span>
+                            </div>
+                            <button onClick={() => navigate(-1)} class="text-text-brown dark:text-primary p-2 rounded-full hover:bg-brand-orange/20 transition-colors">
+                                <span class="material-icons text-3xl">close</span>
+                            </button>
+                        </div>
+                    </header>
+                    <main class="flex-grow flex items-center justify-center px-4 py-12">
+                        <div class="w-full max-w-lg mx-auto bg-white dark:bg-card-dark shadow-2xl rounded-[3rem] p-12 border border-brand-orange/20 relative overflow-hidden">
+                            <div class="absolute top-0 right-0 -mt-10 -mr-10 w-40 h-40 bg-primary/10 rounded-full blur-3xl pointer-events-none"></div>
+                            <nav class="relative z-10 flex flex-col items-center space-y-8">
+                                {[
+                                    { zh: "關於我們", en: "About Us", path: "/" },
+                                    { zh: "最新消息", en: "Latest News", path: "/" },
+                                    { zh: "食譜分享", en: "Recipe Sharing", path: "/" },
+                                    { zh: "冷凍宅配", en: "Frozen Delivery", path: "/" }
+                                ].map((item, idx) => (
+                                    <React.Fragment key={idx}>
+                                        <Link class="group w-full text-center block" to={item.path}>
+                                            <span class="block text-3xl sm:text-4xl font-display font-bold text-text-brown dark:text-gray-100 group-hover:text-brand-orange transition-colors duration-300 tracking-widest">
+                                                {item.zh}
+                                            </span>
+                                            <span class="block text-sm text-gray-400 dark:text-gray-500 mt-2 font-sans tracking-widest uppercase opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300">
+                                                {item.en}
+                                            </span>
+                                        </Link>
+                                        {idx < 3 && <div class="w-full h-px bg-brand-orange/60 dark:bg-brand-orange/40 rounded-full"></div>}
+                                    </React.Fragment>
+                                ))}
+                            </nav>
+                        </div>
+                    </main>
+                    <footer class="bg-brand-orange/30 dark:bg-stone-900 border-t border-brand-orange/20 py-8">
+                        <div class="max-w-4xl mx-auto px-6 text-center">
+                            <div class="flex justify-center space-x-6 mb-6">
+                                <a class="w-10 h-10 rounded-full bg-red-500 text-white flex items-center justify-center hover:scale-110 transition-transform" href="#"><i class="fab fa-youtube"></i></a>
+                                <a class="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center hover:scale-110 transition-transform" href="#"><i class="fab fa-facebook-f"></i></a>
+                                <a class="w-10 h-10 rounded-full bg-gradient-to-tr from-orange-400 to-purple-600 text-white flex items-center justify-center hover:scale-110 transition-transform" href="#"><i class="fab fa-instagram"></i></a>
+                                <a class="w-10 h-10 rounded-full bg-green-500 text-white flex items-center justify-center hover:scale-110 transition-transform" href="#"><i class="fab fa-line"></i></a>
+                            </div>
+                            <p class="text-text-brown dark:text-gray-400 font-bold mb-2">聯絡我們</p>
+                            <p class="text-sm text-gray-500 dark:text-gray-600 font-serif italic">"HELPING YOU STAY FOCUSED AND LEADING AHEAD."</p>
+                        </div>
+                    </footer>
+                </div>
+            );
+        };
+
+        const RecipePage = () => {
+            const navigate = useNavigate();
+            return (
+                <div class="bg-background-light dark:bg-background-dark min-h-screen">
+                    <Navbar />
+                    <main class="container mx-auto px-4 py-8 md:py-12 relative">
+                        <div class="absolute inset-0 bg-dot-pattern opacity-10 pointer-events-none z-0"></div>
+                        <div class="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-12">
+                            <div class="lg:col-span-8 space-y-8">
+                                <div class="text-center lg:text-left space-y-4">
+                                    <div class="inline-block px-4 py-1 bg-primary text-text-brown text-sm font-bold rounded-full mb-2 shadow-sm">
+                                        偶爾煮大餐
+                                    </div>
+                                    <h1 class="text-3xl md:text-5xl font-serif font-bold text-text-brown dark:text-primary">
+                                        經典紅酒燉牛肉
+                                    </h1>
+                                    <p class="text-lg text-gray-600 dark:text-gray-300 font-serif italic">
+                                        "用心做好每道料理，天然食材簡單煮有次序"
+                                    </p>
+                                    <div class="flex items-center justify-center lg:justify-start space-x-6 text-sm md:text-base text-gray-500 dark:text-gray-400 mt-4">
+                                        <div class="flex items-center"><i class="far fa-clock mr-2"></i> 90 分鐘</div>
+                                        <div class="flex items-center"><i class="fas fa-user-friends mr-2"></i> 4 人份</div>
+                                        <div class="flex items-center"><i class="fas fa-fire-alt mr-2 text-red-400"></i> 中等難度</div>
+                                    </div>
+                                </div>
+                                <div class="relative rounded-[3rem] overflow-hidden shadow-xl group">
+                                    <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent z-10 opacity-60"></div>
+                                    <img alt="Beef Stew" class="w-full h-[400px] md:h-[500px] object-cover transition-transform duration-700 group-hover:scale-105" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDRatp0mzIktVK_4ZtYFeHUB6pvy-NOqJhGhNobKhXGYQICAzVqUXh9-3cfHmWPko7VsHNOxdqD05LZMsv60s2VovI4dtqUQnl3c4gSkW2YkqbVnc65eEpeXTepJ9Bw2a8GVlKc4_u8O_7HeiajZaWezbwO-5Ms1eEmr6fGIrlxXDEmWv4C_xMtAIrZLo9V82LCoOEFxnEKdYKw4SscVJb6njggbDB-HrnwRpBPTI4tSRWGKG5fjCl2ZrXn4pxMQhAuVtNIqEmqnAA"/>
+                                    <div class="absolute inset-0 z-20 flex items-center justify-center">
+                                        <button class="w-20 h-20 bg-red-600/90 hover:bg-red-700 text-white rounded-3xl flex items-center justify-center shadow-2xl transform hover:scale-110 transition-all border-4 border-white dark:border-gray-800">
+                                            <i class="fas fa-play text-3xl ml-1"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="prose prose-lg dark:prose-invert max-w-none font-light leading-relaxed">
+                                    <p>這道經典的紅酒燉牛肉是週末晚餐的完美選擇。選用新鮮的牛腩肉，搭配香甜的紅蘿蔔與洋蔥，在濃郁的紅酒醬汁中慢火燉煮，直到肉質入口即化。不僅暖胃，更能溫暖家人的心。</p>
+                                </div>
+                                <section class="bg-white dark:bg-card-dark rounded-[2.5rem] p-8 shadow-lg border border-brand-orange/20">
+                                    <div class="flex items-center mb-6">
+                                        <div class="w-12 h-12 rounded-full bg-primary flex items-center justify-center mr-3 text-text-brown">
+                                            <i class="fas fa-carrot text-xl"></i>
+                                        </div>
+                                        <h2 class="text-2xl font-serif font-bold text-text-brown dark:text-primary">準備食材</h2>
+                                    </div>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-y-3 gap-x-8">
+                                        {[
+                                            ["牛腩 (Beef Brisket)", "600g"],
+                                            ["洋蔥 (Onion)", "1 顆"],
+                                            ["紅蘿蔔 (Carrot)", "2 條"],
+                                            ["馬鈴薯 (Potato)", "2 顆"],
+                                            ["紅酒 (Red Wine)", "300ml"],
+                                            ["番茄糊 (Tomato Paste)", "2 大匙"],
+                                            ["月桂葉 (Bay Leaf)", "2 片"],
+                                            ["高湯 (Beef Stock)", "500ml"]
+                                        ].map(([item, qty], i) => (
+                                            <div key={i} class="flex justify-between border-b border-dashed border-gray-300 dark:border-gray-600 pb-2">
+                                                <span>{item}</span>
+                                                <span class="font-semibold">{qty}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </section>
+                                <section class="space-y-6">
+                                    <div class="flex items-center mb-2">
+                                        <div class="w-12 h-12 rounded-full bg-primary flex items-center justify-center mr-3 text-text-brown">
+                                            <i class="fas fa-utensils text-xl"></i>
+                                        </div>
+                                        <h2 class="text-2xl font-serif font-bold text-text-brown dark:text-primary">料理步驟</h2>
+                                    </div>
+                                    <div class="space-y-6">
+                                        {[
+                                            { step: 1, title: "食材處理", desc: "將牛腩切成約 3-4 公分的大塊，洋蔥切丁，紅蘿蔔與馬鈴薯切滾刀塊備用。將牛肉表面擦乾，撒上少許鹽與黑胡椒醃製 10 分鐘。" },
+                                            { step: 2, title: "煎香牛肉", desc: "熱鍋倒入少許油，將牛肉塊分批下鍋，煎至表面金黃焦香後取出備用。利用鍋底的油脂炒香洋蔥丁。" },
+                                            { step: 3, title: "燉煮", desc: "將牛肉倒回鍋中，加入番茄糊翻炒均勻，倒入紅酒煮沸讓酒精揮發。接著加入高湯、紅蘿蔔、月桂葉，蓋上鍋蓋小火燉煮約 60 分鐘。" },
+                                            { step: 4, title: "收尾", desc: "最後加入馬鈴薯塊，繼續燉煮約 20-30 分鐘至馬鈴薯鬆軟。試味道依個人喜好加入鹽調味，即可上桌！" }
+                                        ].map((item) => (
+                                            <div key={item.step} class="flex gap-4 group">
+                                                <div class="flex-shrink-0 w-12 h-12 rounded-full bg-primary text-text-brown flex items-center justify-center font-bold text-xl shadow-md group-hover:scale-110 transition-transform">
+                                                    {item.step}
+                                                </div>
+                                                <div class="bg-white dark:bg-card-dark p-6 rounded-[2rem] shadow-md flex-grow border-l-8 border-primary transition-all hover:shadow-xl">
+                                                    <h3 class="font-bold text-lg mb-2 text-text-brown dark:text-gray-200">{item.title}</h3>
+                                                    <p class="text-gray-600 dark:text-gray-400">{item.desc}</p>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </section>
+                            </div>
+                            <aside class="lg:col-span-4 space-y-10">
+                                <div class="bg-card-light dark:bg-card-dark rounded-[3rem] p-8 shadow-xl sticky top-24">
+                                    <h3 class="text-xl font-serif font-bold text-center mb-8 relative">
+                                        <span class="relative z-10 px-4 bg-card-light dark:bg-card-dark text-text-brown dark:text-primary">更多美味食譜</span>
+                                        <div class="absolute inset-0 top-1/2 h-px bg-primary/50 -z-0"></div>
+                                    </h3>
+                                    <div class="space-y-10">
+                                        {[
+                                            { title: "鮮蔬雞肉蝴蝶麵", tag: "家庭日日煮", img: "https://lh3.googleusercontent.com/aida-public/AB6AXuDhZ3XSlY_HY7n-rLBDuufWdw3foItV94f4SOpzSlngLl01GMaBdwi4VPJsBBIlcn3GV_z736HU9u0evILpl_HmgA72-iW5ZMa1eJ87mLsLJr3ILLltFcQbu3LMFXn__UBuOkVQGpvdA3KnkXz9RAnVqbRY3a22yf-Y_XgjYG8-KoQR5kHFLLIxAveHnWc_oWJ-JAAkCYF8YfXr1F_s9gWGcoXIZcgc2h8Yq48SXMM6kb8pg2YjeFBVjsfegV5cLPeAh_0Xm6ZK0oU" },
+                                            { title: "義式烤蔬薄脆披薩", tag: "慶祝一下", img: "https://lh3.googleusercontent.com/aida-public/AB6AXuD-6D-mI3RALVXCH6wBh8dFbfg6uRab5pXLkSksVcRqa3lh3P7FcPzjF8bZnTSWnTYTEs-taWHIQU-rLymjHoxI2yljypY3Gg8_A1zBcVmAVPOjLlawPTMvexXubCVYMfgHsJh7tzkFVpHMrGc7L458EOVNnc01W1apNNl4TLxlYjrnLBvS4bggenVgv9m1dwGoNpC7CkuKBdjkbyCB2kjPhanLD43pnuKQ6IWbRpA_rgbO7MUeMPR6B33B4y90mVb9_jJZXtw5Dok" },
+                                            { title: "覆盆子優格冰淇淋", tag: "冷凍宅配", img: "https://lh3.googleusercontent.com/aida-public/AB6AXuBo_muG4nLxiN-3QEd0najmxvX95Ly6DTZhXNf-Z69WLCZPEKcx6gtXn48hOk1yMoK9wB3bpEDe8SBF1Tuo8NXnn-pJFQm8p_DIjUcMoeR28aL_Ua9Hxsz0Y8ykL7DIUXbniS228AETb_VE7kzgxb5zth4-p6mFCKiR8azzJvMwQCYpEqaShAuKOX63ISt7igL517ofXhRicFDDJBV9O6BbWVcXmHPLVbUwl2OvrvrxNFSctuCvyfoDX0fiywTDfpeXmPftLIEDZbo" }
+                                        ].map((item, i) => (
+                                            <a key={i} class="block group text-center cursor-pointer">
+                                                <div class="relative inline-block mb-3">
+                                                    <div class="absolute inset-0 bg-primary/30 rounded-full transform scale-110 group-hover:scale-125 transition-transform duration-500 blur-sm"></div>
+                                                    <div class="w-48 h-32 md:w-56 md:h-40 mx-auto rounded-full overflow-hidden border-4 border-white dark:border-gray-700 shadow-lg relative z-10">
+                                                        <img alt={item.title} class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700" src={item.img}/>
+                                                    </div>
+                                                    <div class="absolute -top-3 -right-2 bg-white dark:bg-stone-700 rounded-full p-2 shadow-md z-20 w-16 h-16 flex items-center justify-center">
+                                                        <span class="text-[10px] font-bold text-text-brown dark:text-primary leading-tight">{item.tag.split('').map((char, j) => <React.Fragment key={j}>{char}{j===1 && <br/>}</React.Fragment>)}</span>
+                                                    </div>
+                                                </div>
+                                                <h4 class="text-lg font-bold text-text-brown dark:text-gray-200 group-hover:text-primary transition-colors">{item.title}</h4>
+                                            </a>
+                                        ))}
+                                    </div>
+                                    <div class="mt-12 pt-8 border-t border-brand-orange/30 text-center">
+                                        <h5 class="font-serif text-md mb-4 text-gray-600 dark:text-gray-400">訂閱我們的電子報</h5>
+                                        <div class="flex flex-col space-y-3">
+                                            <input class="px-4 py-3 rounded-full border-none bg-white dark:bg-stone-700 focus:ring-2 focus:ring-primary shadow-inner" placeholder="您的 Email" type="email"/>
+                                            <button class="bg-primary hover:bg-yellow-400 text-text-brown font-bold py-3 px-6 rounded-full transition-colors shadow-lg">立即訂閱</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </aside>
+                        </div>
+                    </main>
+                    <Footer />
+                </div>
+            );
+        };
+
+        // --- Main App ---
+
+        const App = () => {
+            return (
+                <MemoryRouter>
+                    <Routes>
+                        <Route path="/" element={<HomePage />} />
+                        <Route path="/menu" element={<MenuPage />} />
+                        <Route path="/recipe" element={<RecipePage />} />
+                    </Routes>
+                </MemoryRouter>
+            );
+        };
+
+        const container = document.getElementById('root');
+        const root = createRoot(container);
+        root.render(<App />);
+    </script>
+</body>
+</html>
